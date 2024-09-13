@@ -4,19 +4,26 @@ import os
 import argparse
 import time
 import scapy
-from scapy.all import *
+from scapy.all import Ether, RandMAC
 
 sde_install = os.environ['SDE_INSTALL']
 sys.path.append('%s/lib/python2.7/site-packages/tofino'%(sde_install))
 sys.path.append('%s/lib/python2.7/site-packages/p4testutils'%(sde_install))
 sys.path.append('%s/lib/python2.7/site-packages'%(sde_install))
-# import grpc
-# import time
-# from pprint import pprint
-# import bfrt_grpc.bfruntime_pb2 as bfruntime_pb2
 
 # Assumes valid PYTHONPATH
 import bfrt_grpc.client as gc
+
+# For getting the dev_ports from the front panel ports itself
+def get_devport(frontpanel, lane):
+    port_hdl_info = bfrt_info.table_get("$PORT_HDL_INFO")
+    key = port_hdl_info.make_key(
+        [gc.KeyTuple("$CONN_ID", frontpanel), gc.KeyTuple("$CHNL_ID", lane)]
+    )
+    for data, _ in port_hdl_info.entry_get(target, [key], {"from_hw": False}):
+        devport = data.to_dict()["$DEV_PORT"]
+        if devport:
+            return devport
 
 # Connect to the BF Runtime server
 for bfrt_client_id in range(10):
@@ -44,24 +51,11 @@ if bfrt_client_id == 0:
 # Get the target device, currently setup for all pipes
 target = gc.Target(device_id=0, pipe_id=0xffff)
 
-# For getting the dev_ports from the front panel ports itself
-def get_devport(frontpanel, lane):
-    port_hdl_info = bfrt_info.table_get("$PORT_HDL_INFO")
-    key = port_hdl_info.make_key(
-        [gc.KeyTuple("$CONN_ID", frontpanel), gc.KeyTuple("$CHNL_ID", lane)]
-    )
-    for data, _ in port_hdl_info.entry_get(target, [key], {"from_hw": False}):
-        devport = data.to_dict()["$DEV_PORT"]
-        if devport:
-            return devport
-
-
-# port15 = get_devport(15, 0)
-# port16 = get_devport(16, 0)
-# print(port15)
-# print(port16)
-#Unable to see port 16 for some reason even though it as added, could be because its dev-port value returned is 0
-# port16=0
+parser = argparse.ArgumentParser(description="Test Configuration")
+parser.add_argument('-r', type=int, help="Line rate (Gbps),           Default :  0.08", default=0.08)
+parser.add_argument('-b', type=int, help="Duration (s),         Default :  30", default=30)
+parser.add_argument('-s', type=int, help="Size of the packets in (B)  Default :  256", default=256)
+args = parser.parse_args()
 
 # Getting the pktgen tables
 pktgen_buffer = bfrt_info.table_get("tf1.pktgen.pkt_buffer")
@@ -69,14 +63,13 @@ pktgen_port = bfrt_info.table_get("tf1.pktgen.port_cfg")
 pktgen_app = bfrt_info.table_get("tf1.pktgen.app_cfg")
 
 # sport_value = 1234
-src_mac = "00:AA:BB:CC:DD:EE"
-dst_mac = "00:EE:DD:CC:BB:AA"
-p=Ether(src=src_mac, dst=dst_mac,type=0x8122)/(b'\x01'*50)
-p.show()
-packet_len = len(p) -6
+src_mac = RandMAC()
+dst_mac = RandMAC()
+p=Ether(src=src_mac, dst=dst_mac, type=0x8122)/(b'\x01'*( args.s - 22 ))
+packet_len = len(p) - 6
 
 # Configuring pktgen port
-pktgen_port_key = pktgen_port.make_key([gc.KeyTuple('dev_port', 68)])
+pktgen_port_key = pktgen_port.make_key([gc.KeyTuple('dev_port', 196)])
 pktgen_port_action_data = pktgen_port.make_data([gc.DataTuple('pktgen_enable', bool_val=True)])
 pktgen_port.entry_mod(target,[pktgen_port_key],[pktgen_port_action_data])
 
@@ -90,6 +83,12 @@ if len(sys.argv) > 1:
     timer = int(sys.argv[1])
 else:
     timer = 395
+
+## Configuring pktgen parameters
+padding = args.s % 4
+overhead = 98 + padding
+INTER_PACKET_GAP_NS = round((packet_len + overhead) * 8 / args.r)
+
 ## Configuring pktgen app
 pktgen_app_key = pktgen_app.make_key([gc.KeyTuple('app_id', 0)])
 pktgen_app_action_data = pktgen_app.make_data([gc.DataTuple('timer_nanosec', timer),
@@ -102,7 +101,7 @@ pktgen_app_action_data = pktgen_app.make_data([gc.DataTuple('timer_nanosec', tim
                                                     gc.DataTuple('packets_per_batch_cfg', 1),
                                                     gc.DataTuple('ibg', 0),
                                                     gc.DataTuple('ibg_jitter', 0),
-                                                    gc.DataTuple('ipg', 0),
+                                                    gc.DataTuple('ipg', INTER_PACKET_GAP_NS),
                                                     gc.DataTuple('ipg_jitter', 0),
                                                     gc.DataTuple('batch_counter', 0),
                                                     gc.DataTuple('pkt_counter', 0),
@@ -112,6 +111,13 @@ pktgen_app.entry_mod(target,[pktgen_app_key],[pktgen_app_action_data])
 print("Packet generation is completed")
 '''
 time.sleep(4) # Sleep for 1 second
+
+port15 = get_devport(15, 0)
+port16 = get_devport(16, 0)
+print(port15)
+print(port16)
+Unable to see port 16 for some reason even though it as added, could be because its dev-port value returned is 0
+port16=0
 
 dev_ports=[port15,port16]
 # Getting the rates

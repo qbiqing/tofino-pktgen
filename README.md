@@ -41,4 +41,4 @@ bf-sde.pm> rate-period 1
 bf-sde.pm> rate-show
 ```
 
-Acknowledgments to Kashish and Archit for contributing most of the traffic generation code.
+Acknowledgments to Kashish and Archit for contributing to the traffic generation code.
