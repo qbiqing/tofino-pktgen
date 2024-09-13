@@ -1,20 +1,38 @@
-# Some commands to run
+# Get started with Tofino Pktgen
 
-Run in screen the following to run the data plane.
+This repo generates packets using the Tofino switch.
+
+To compile the simple forwarding program:
+```sh
+$SDE/p4_build.sh -p <this_dir>/simple_forwarding.p4
+```
+
+Run in `screen` the following to run the data plane.
 ```sh
 screen -r
-./run_switchd.sh -p simple_forwarding
+$SDE/run_switchd.sh -p simple_forwarding
 ```
 
 Set up the ports as follows
 ```sh
 ucli
 pm
-port-add 31/0 40G NONE
-port-add 32/0 40G NONE
+port-add <physical port no.>/0 40G NONE
 an-set -/- 2
 port-enb -/-
 exit
+# To show RX/TX packets at the port
+show
+```
+
+Simple forwarding rules
+```sh
+bfrt.simple_forwarding.pipe.Ingress.forward.entry_with_send(ingress_port=<pktgen dev port>, port=<output dev port>).push()
+```
+
+To generate packets, run the control plane
+```sh
+python3 <this_dir>/traffic_generator.py
 ```
 
 Setting to show traffic rate at each port
@@ -23,8 +41,4 @@ bf-sde.pm> rate-period 1
 bf-sde.pm> rate-show
 ```
 
-Simple forwarding rules
-```sh
-bfrt.simple_forwarding.pipe.Ingress.forward.entry_with_send(ingress_port=196, port=132).push()
-bfrt.simple_forwarding.pipe.Ingress.forward.entry_with_send(ingress_port=196, port=140).push()
-```
+Acknowledgments to Kashish and Archit for contributing most of the traffic generation code.

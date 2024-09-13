@@ -56,12 +56,12 @@ def get_devport(frontpanel, lane):
             return devport
 
 
-port15 = get_devport(15, 0)
-port16 = get_devport(16, 0)
-print(port15)
-print(port16)
+# port15 = get_devport(15, 0)
+# port16 = get_devport(16, 0)
+# print(port15)
+# print(port16)
 #Unable to see port 16 for some reason even though it as added, could be because its dev-port value returned is 0
-port16=0
+# port16=0
 
 # Getting the pktgen tables
 pktgen_buffer = bfrt_info.table_get("tf1.pktgen.pkt_buffer")
@@ -110,7 +110,7 @@ pktgen_app_action_data = pktgen_app.make_data([gc.DataTuple('timer_nanosec', tim
                                                     'trigger_timer_periodic')
 pktgen_app.entry_mod(target,[pktgen_app_key],[pktgen_app_action_data])
 print("Packet generation is completed")
-
+'''
 time.sleep(4) # Sleep for 1 second
 
 dev_ports=[port15,port16]
@@ -156,6 +156,7 @@ print("The packet in to 1c is",count[0])
 
 if((out[0]-count[0])>1):
     print("packet loss")
+'''
 #pktgen_app_action_data=pktgen_app.make_data([gc.DataTuple('app_enable',bool_val=False)])                                            
 #pktgen_app.entry_mod(target,[pktgen_app_key],[pktgen_app_action_data])
 #print("packet gen is stopped")

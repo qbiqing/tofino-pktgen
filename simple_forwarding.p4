@@ -140,8 +140,6 @@ control Ingress(
     	ig_tm_md.ucast_egress_port = port;
     }
     
-    
-    
     table forward{
         key = {ig_intr_md.ingress_port : exact;}
         actions = {
