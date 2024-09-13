@@ -82,21 +82,21 @@ INTER_BATCH_GAP_NS = 65536*INTER_PACKET_GAP_NS
 BATCH_COUNT = round(args.b*1000000000/INTER_BATCH_GAP_NS) - 1
 
 pktgen_app_key = pktgen_app.make_key([gc.KeyTuple('app_id', 0)])
-pktgen_app_action_data = pktgen_app.make_data([gc.DataTuple('timer_nanosec', 10),
-                                                    gc.DataTuple('app_enable',bool_val = True),
-                                                    gc.DataTuple('pkt_len', pkt_len),
-                                                    gc.DataTuple('pkt_buffer_offset', 0),
-                                                    gc.DataTuple('pipe_local_source_port', 68),
-                                                    gc.DataTuple('increment_source_port',bool_val = False),
-                                                    gc.DataTuple('batch_count_cfg',BATCH_COUNT),
-                                                    gc.DataTuple('packets_per_batch_cfg',65535),
-                                                    gc.DataTuple('ibg',INTER_BATCH_GAP_NS),
-                                                    gc.DataTuple('ibg_jitter', 0),
-                                                    gc.DataTuple('ipg', INTER_PACKET_GAP_NS),
-                                                    gc.DataTuple('ipg_jitter', 0),
-                                                    gc.DataTuple('batch_counter', 0),
-                                                    gc.DataTuple('pkt_counter', 0),
-                                                    gc.DataTuple('trigger_counter', 0)],
-                                                    'trigger_timer_one_shot')
+pktgen_app_action_data = pktgen_app.make_data([
+    gc.DataTuple('timer_nanosec', 10),
+    gc.DataTuple('app_enable',bool_val = True),
+    gc.DataTuple('pkt_len', pkt_len),
+    gc.DataTuple('pkt_buffer_offset', 0),
+    gc.DataTuple('pipe_local_source_port', 68),
+    gc.DataTuple('increment_source_port',bool_val = False),
+    gc.DataTuple('batch_count_cfg',BATCH_COUNT),
+    gc.DataTuple('packets_per_batch_cfg',65535),
+    gc.DataTuple('ibg',INTER_BATCH_GAP_NS),
+    gc.DataTuple('ibg_jitter', 0),
+    gc.DataTuple('ipg', INTER_PACKET_GAP_NS),
+    gc.DataTuple('ipg_jitter', 0),
+    gc.DataTuple('batch_counter', 0),
+    gc.DataTuple('pkt_counter', 0),
+    gc.DataTuple('trigger_counter', 0)], 'trigger_timer_one_shot')
 pktgen_app.entry_mod(dev_tgt,[pktgen_app_key],[pktgen_app_action_data])
 print("Packet generation is completed")
