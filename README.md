@@ -32,7 +32,7 @@ bfrt.simple_forwarding.pipe.Ingress.forward.entry_with_send(ingress_port=<pktgen
 
 To generate packets, run the control plane
 ```sh
-python3 <this_dir>/traffic_generator.py
+python3 <this_dir>/generate.py
 ```
 
 Setting to show traffic rate at each port

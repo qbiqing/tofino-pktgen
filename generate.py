@@ -105,56 +105,56 @@ pktgen_app_action_data = pktgen_app.make_data([
 pktgen_app.entry_mod(target,[pktgen_app_key],[pktgen_app_action_data])
 print("Packet generation is completed")
 
-time.sleep(4) # Sleep for 1 second
-
 port31 = get_devport(31, 0)
 port32 = get_devport(32, 0)
-# print(port31)
-# print(port32)
-
 dev_ports=[port31,port32]
+print(port31)
+print(port32)
+
 # Getting the rates
-port_stat_table = bfrt_info.table_get("port.port_stat")
-keys = [ port_stat_table.make_key([gc.KeyTuple('$DEV_PORT', dp)]) for dp in dev_ports ]
-resp = list(port_stat_table.entry_get(target, keys, {'from_hw': False}, None))
-# print(resp)
-# for i, res in enumerate(resp):
-data_dict0 = resp[0][0].to_dict()      
-tx_pps_31 = data_dict0['$TX_PPS']
-rx_pps_31 = data_dict0['$RX_PPS']
-tx_rate_31 = data_dict0['$TX_RATE']
-rx_rate_31 = data_dict0['$RX_RATE']
+while 1:
+    port_stat_table = bfrt_info.table_get("$PORT_STAT")
+    keys = [ port_stat_table.make_key([gc.KeyTuple('$DEV_PORT', dp)]) for dp in dev_ports ]
+    resp = list(port_stat_table.entry_get(target, keys, {'from_hw': False}, None))
 
-data_dict1 = resp[1][0].to_dict()
-tx_pps_32 = data_dict1['$TX_PPS']
-rx_pps_32 = data_dict1['$RX_PPS']
-tx_rate_32 = data_dict1['$TX_RATE']
-rx_rate_32 = data_dict1['$RX_RATE']
+    data_dict0 = resp[0][0].to_dict()      
+    tx_pps_31 = data_dict0['$TX_PPS']
+    rx_pps_31 = data_dict0['$RX_PPS']
+    tx_rate_31 = data_dict0['$TX_RATE']
+    rx_rate_31 = data_dict0['$RX_RATE']
 
-print("For port 31, Tx rate = "+str(tx_rate_31)+" Tx Pps = "+str(tx_pps_31))
-print("For port 32, Rx rate = "+str(rx_rate_32)+" Rx Pps = "+str(rx_pps_32))
+    data_dict1 = resp[1][0].to_dict()
+    tx_pps_32 = data_dict1['$TX_PPS']
+    rx_pps_32 = data_dict1['$RX_PPS']
+    tx_rate_32 = data_dict1['$TX_RATE']
+    rx_rate_32 = data_dict1['$RX_RATE']
 
-pkt_out = bfrt_info.table_get("pipe.Ingress.reg")
-key = [pkt_out.make_key([gc.KeyTuple('$REGISTER_INDEX', 0)])]
+    # print("For port 31, Tx rate = "+str(tx_rate_31)+" Tx Pps = "+str(tx_pps_31))
+    print("For port 32, Tx rate = "+str(tx_rate_32)+" Tx Pps = "+str(tx_pps_32))
+
+    time.sleep(1)
+
+# pkt_out = bfrt_info.table_get("pipe.Ingress.reg")
+# key = [pkt_out.make_key([gc.KeyTuple('$REGISTER_INDEX', 0)])]
 # data = [pkt_count.make_data([gc.DataTuple('SwitchIngress.active.f1', 0)])]
 
-for data, key in pkt_out.entry_get(target, key, {"from_hw": True}):
-    out = data.to_dict()["Ingress.reg.f1"]
+# for data, key in pkt_out.entry_get(target, key, {"from_hw": True}):
+#     out = data.to_dict()["Ingress.reg.f1"]
 
-print("The packet out of 1c is",out[0])
+# print("The packet out of 1c is",out[0])
 
 
-pkt_count = bfrt_info.table_get("pipe.Ingress.reg_2")
-key = [pkt_count.make_key([gc.KeyTuple('$REGISTER_INDEX', 0)])]
+# pkt_count = bfrt_info.table_get("pipe.Ingress.reg_2")
+# key = [pkt_count.make_key([gc.KeyTuple('$REGISTER_INDEX', 0)])]
 # data = [pkt_count.make_data([gc.DataTuple('SwitchIngress.active.f1', 0)])]
 
-for data, key in pkt_count.entry_get(target, key, {"from_hw": True}):
-    count = data.to_dict()["Ingress.reg_2.f1"]
+# for data, key in pkt_count.entry_get(target, key, {"from_hw": True}):
+#     count = data.to_dict()["Ingress.reg_2.f1"]
 
-print("The packet in to 1c is",count[0])
+# print("The packet in to 1c is",count[0])
 
-if((out[0]-count[0])>1):
-    print("packet loss")
+# if((out[0]-count[0])>1):
+#     print("packet loss")
 
 #pktgen_app_action_data=pktgen_app.make_data([gc.DataTuple('app_enable',bool_val=False)])                                            
 #pktgen_app.entry_mod(target,[pktgen_app_key],[pktgen_app_action_data])
