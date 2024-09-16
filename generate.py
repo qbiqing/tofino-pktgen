@@ -87,7 +87,7 @@ INTER_PACKET_GAP_NS = round((packet_len + overhead) * 8 / args.r)
 ## Configuring pktgen app
 pktgen_app_key = pktgen_app.make_key([gc.KeyTuple('app_id', 0)])
 pktgen_app_action_data = pktgen_app.make_data([
-    gc.DataTuple('timer_nanosec', 395),
+    gc.DataTuple('timer_nanosec', 10),
     gc.DataTuple('app_enable', bool_val=True),
     gc.DataTuple('pkt_len', packet_len),
     gc.DataTuple('pkt_buffer_offset', 0),
@@ -111,12 +111,12 @@ dev_ports=[port31,port32]
 print(port31)
 print(port32)
 
+port_stat_table = bfrt_info.table_get("$PORT_STAT")
+keys = [ port_stat_table.make_key([gc.KeyTuple('$DEV_PORT', dp)]) for dp in dev_ports ]
+
 # Getting the rates
 while 1:
-    port_stat_table = bfrt_info.table_get("$PORT_STAT")
-    keys = [ port_stat_table.make_key([gc.KeyTuple('$DEV_PORT', dp)]) for dp in dev_ports ]
     resp = list(port_stat_table.entry_get(target, keys, {'from_hw': False}, None))
-
     data_dict0 = resp[0][0].to_dict()      
     tx_pps_31 = data_dict0['$TX_PPS']
     rx_pps_31 = data_dict0['$RX_PPS']
