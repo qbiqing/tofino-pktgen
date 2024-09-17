@@ -117,7 +117,7 @@ keys = [ port_stat_table.make_key([gc.KeyTuple('$DEV_PORT', dp)]) for dp in dev_
 # Getting the rates
 while 1:
     resp = list(port_stat_table.entry_get(target, keys, {'from_hw': False}, None))
-    data_dict0 = resp[0][0].to_dict()      
+    data_dict0 = resp[0][0].to_dict()
     tx_pps_31 = data_dict0['$TX_PPS']
     rx_pps_31 = data_dict0['$RX_PPS']
     tx_rate_31 = data_dict0['$TX_RATE']
