@@ -29,8 +29,6 @@ Simple forwarding rules
 ```sh
 bfrt
 bfrt.simple_forwarding.pipe.Ingress.forward.entry_with_send(ingress_port=<pktgen dev port>, port=<output dev port>).push()
-# Add window setting for latency check
-bfrt.kaypoh.pipe.SwitchIngress.check_kaypoh.entry_with_update_kaypoh(window=49160).push()
 ```
 
 To generate packets, run the control plane
